@@ -11,18 +11,22 @@ namespace CoinExApiAccess.Core
         /// Get HMAC Signature
         /// </summary>
         /// <param name="message">Message to sign</param>
-        /// <param name="apiSecret">Api secret</param>
         /// <returns>string of signed message</returns>
-        public string GetHMACSignature(string message, string apiSecret)
+        public string GetHMACSignature(string message)
         {
-            message = message + $"&secretKey={apiSecret}";
-            byte[] msgBytes = Encoding.UTF8.GetBytes(message);
-            byte[] keyBytes = Encoding.UTF8.GetBytes(apiSecret);
+            using (var md5 = MD5.Create())
+            {
+                var msgBytes = Encoding.ASCII.GetBytes(message);
+                var hashBytes = md5.ComputeHash(msgBytes);
 
-            var md5 = new HMACMD5(keyBytes);
-            var hash = md5.ComputeHash(msgBytes);
+                var sb = new StringBuilder();
+                for (var i = 0; i < hashBytes.Length; i++)
+                {
+                    sb.Append(hashBytes[i].ToString("X2"));
+                }
 
-            return BitConverter.ToString(hash).Replace("-", "").ToUpper();
+                return sb.ToString();
+            }
         }
     }
 }

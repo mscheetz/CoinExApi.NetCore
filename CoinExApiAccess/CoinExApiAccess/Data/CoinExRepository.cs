@@ -19,6 +19,7 @@ namespace CoinExApiAccess.Data
         private IRESTRepository _restRepo;
         private DateTimeHelper _dtHelper;
         private ApiInformation _apiInfo = null;
+        private Helper _helper;
         private string baseUrl;
 
         /// <summary>
@@ -74,6 +75,7 @@ namespace CoinExApiAccess.Data
             _restRepo = new RESTRepository();
             baseUrl = "https://api.coinex.com/v1";
             _dtHelper = new DateTimeHelper();
+            _helper = new Helper();
         }
 
         /// <summary>
@@ -89,12 +91,177 @@ namespace CoinExApiAccess.Data
             return string.IsNullOrEmpty(_apiInfo.apiSecret) ? false : true;
         }
 
+        /// <summary>
+        /// Get Trading Pairs
+        /// </summary>
+        /// <returns>Array of string of trading pairs</returns>
         public async Task<string[]> GetMarketList()
         {
             var endpoint = "/market/list";
             var url = baseUrl + endpoint;
 
             var response = await _restRepo.GetApiStream<ResponseMessage<string[]>>(url);
+
+            return response.data;
+        }
+
+        /// <summary>
+        /// Get Ticker for a trading pair
+        /// </summary>
+        /// <param name="pair">String of trading pair</param>
+        /// <returns>TickerData object</returns>
+        public async Task<TickerData> GetTicker(string pair)
+        {
+            var endpoint = $"/market/ticker?market={pair}";
+            var url = baseUrl + endpoint;
+
+            var response = await _restRepo.GetApiStream<ResponseMessage<TickerData>>(url);
+
+            return response.data;
+        }
+
+        /// <summary>
+        /// Get Market depth for a trading pair
+        /// </summary>
+        /// <param name="pair">String of trading pair</param>
+        /// <param name="merge">Decimal places</param>
+        /// <param name="limit">Return amount</param>
+        /// <returns>MarketDepth object</returns>
+        public async Task<MarketDepth> GetMarketDepth(string pair, Merge merge = Merge.Zero, Limit limit = Limit.Twenty)
+        {
+            var mergeValue = (int)Convert.ChangeType(merge, merge.GetTypeCode());
+            var limitValue = (int)Convert.ChangeType(limit, limit.GetTypeCode());
+            var decimalPlaces = mergeValue == 0 ? 0 : _helper.DecimalValueAtPrecision(mergeValue);
+
+            var endpoint = $"/market/depth?market={pair}&merge={mergeValue}&limit={limitValue}";
+            var url = baseUrl + endpoint;
+
+            var response = await _restRepo.GetApiStream<ResponseMessage<MarketDepth>>(url);
+
+            return response.data;
+        }
+
+        /// <summary>
+        /// Get Transaction data
+        /// </summary>
+        /// <param name="pair">String of trading pair</param>
+        /// <param name="id">Transaction history id</param>
+        /// <returns>Transaction object</returns>
+        public async Task<Transaction> GetTransactionData(string pair, int id = 0)
+        {
+            var endpoint = $"/market/ticker?market={pair}&last_id={id}";
+            var url = baseUrl + endpoint;
+
+            var response = await _restRepo.GetApiStream<ResponseMessage<Transaction>>(url);
+
+            return response.data;
+        }
+
+        /// <summary>
+        /// Get K-Line data
+        /// </summary>
+        /// <param name="pair">String of trading pair</param>
+        /// <param name="interval">Time interval for KLines</param>
+        /// <param name="limit">Number of KLines to return, max 1000</param>
+        /// <returns>Array of KLine objects</returns>
+        public async Task<KLine[]> GetKLine(string pair, Interval interval, int limit = 1000)
+        {
+            limit = limit > 1000 ? 1000 : limit;
+            var intervalString = _helper.IntervalToString(interval);
+            var endpoint = $"/market/kline?market={pair}&limit={limit}&type={intervalString}";
+            var url = baseUrl + endpoint;
+
+            var response = await _restRepo.GetApiStream<ResponseMessage<KLine[]>>(url);
+
+            return response.data;
+        }
+
+        /// <summary>
+        /// Get account balance
+        /// </summary>
+        /// <returns>Dictionary of Coin / value pairs</returns>
+        public async Task<Dictionary<string, Asset>> GetBalance()
+        {
+            var queryString = new List<string>
+            {
+                $"access_id={_apiInfo.apiKey}",
+                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
+            };
+            var endpoint = $"/balance/info";
+            var url = CreateUrl(endpoint, true, queryString);
+
+            var response = await _restRepo.GetApiStream<ResponseMessage<Dictionary<string, Asset>>>(url, GetRequestHeaders(queryString));
+
+            return response.data;
+        }
+
+        /// <summary>
+        /// Get all Withdrawals from account
+        /// </summary>
+        /// <returns>Array of Withdrawal objects</returns>
+        public async Task<Withdrawal[]> GetWithdrawals()
+        {
+            return await OnGetWithdrawals();
+        }
+
+        /// <summary>
+        /// Get Withdrawals from account by page number
+        /// </summary>
+        /// <param name="page">Page number to return (default = 1)</param>
+        /// <returns>Array of Withdrawal objects</returns>
+        public async Task<Withdrawal[]> GetWithdrawals(int page = 1)
+        {
+            return await OnGetWithdrawals("", page);
+        }
+
+        /// <summary>
+        /// Get Withdrawals from account
+        /// </summary>
+        /// <param name="coin">Coin to return (default = "")</param>
+        /// <param name="withdrawlId">Id of withdrawal to start listing (optional)</param>
+        /// <param name="page">Page number to return (default = 1)</param>
+        /// <param name="limit">Number of records to return (default = 100)</param>
+        /// <returns>Array of Withdrawal objects</returns>
+        public async Task<Withdrawal[]> GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100)
+        {
+            return await OnGetWithdrawals(coin, withdrawlId, page, limit);
+        }
+
+        /// <summary>
+        /// Get Withdrawals from account
+        /// </summary>
+        /// <param name="coin">Coin to return (default = "")</param>
+        /// <param name="withdrawlId">Id of withdrawal to start listing (optional)</param>
+        /// <param name="limit"
+        /// <returns>Array of Withdrawal objects</returns>
+        private async Task<Withdrawal[]> OnGetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100)
+        {
+            limit = limit > 100 ? 100 : limit;
+            var queryString = new List<string>
+            {
+                $"access_id={_apiInfo.apiKey}",
+                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
+            };
+            if (!string.IsNullOrEmpty(coin))
+            {
+                queryString.Add($"coin_type={coin}");
+            }
+            if (withdrawlId > 0)
+            {
+                queryString.Add($"coin_withdraw_id={withdrawlId}");
+            }
+            if (page > 1)
+            {
+                queryString.Add($"page={page}");
+            }
+            if (limit < 100)
+            {
+                queryString.Add($"limit={limit}");
+            }
+            var endpoint = $"/balance/coin/withdraw";
+            var url = CreateUrl(endpoint, true, queryString);
+
+            var response = await _restRepo.GetApiStream<ResponseMessage<Withdrawal[]>>(url, GetRequestHeaders(queryString));
 
             return response.data;
         }
@@ -119,19 +286,19 @@ namespace CoinExApiAccess.Data
         private string SignMessage(List<string> queryString)
         {
             var qsValues = string.Empty;
-            var timestamp = _dtHelper.UTCtoUnixTimeMilliseconds();
-            var timeStampQS = $"tonce={timestamp}";
+
             if (queryString != null)
             {
-                queryString.Add(timeStampQS);
                 queryString = queryString.OrderBy(q => q).ToList();
+                queryString.Add($"secret_key={_apiInfo.apiSecret}");
                 for (int i = 0; i < queryString.Count; i++)
                 {
                     qsValues += qsValues != string.Empty ? "&" : "";
                     qsValues += queryString[i];
                 }
             }
-            var hmac = security.GetHMACSignature(qsValues, _apiInfo.apiSecret);
+
+            var hmac = security.GetHMACSignature(qsValues);
 
             return hmac;
         }
@@ -147,11 +314,9 @@ namespace CoinExApiAccess.Data
         {
             var qsValues = string.Empty;
             var url = string.Empty;
-            var timestamp = _dtHelper.UTCtoUnixTimeMilliseconds();
-            var timeStampQS = $"tonce={timestamp}";
+
             if (queryString != null)
             {
-                queryString.Add(timeStampQS);
                 queryString = queryString.OrderBy(q => q).ToList();
                 for (int i = 0; i < queryString.Count; i++)
                 {
@@ -159,6 +324,7 @@ namespace CoinExApiAccess.Data
                     qsValues += queryString[i];
                 }
             }
+
             if (!secure)
             {
                 url = baseUrl + $"{apiPath}";
@@ -167,9 +333,8 @@ namespace CoinExApiAccess.Data
 
                 return url;
             }
-            var hmac = security.GetHMACSignature(qsValues, _apiInfo.apiSecret);
 
-            url = baseUrl + $"{apiPath}?{qsValues}&signature={hmac}";
+            url = baseUrl + $"{apiPath}?{qsValues}";
 
             return url;
         }
