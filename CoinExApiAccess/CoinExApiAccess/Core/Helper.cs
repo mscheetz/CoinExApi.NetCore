@@ -1,6 +1,7 @@
 ﻿using CoinExApiAccess.Entities;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace CoinExApiAccess.Core
@@ -19,6 +20,25 @@ namespace CoinExApiAccess.Core
             decimal newValue = value / (decimal)pow;
 
             return newValue;
+        }
+
+        /// <summary>
+        /// Convert an object to a string of property names and values
+        /// </summary>
+        /// <typeparam name="T">Object type</typeparam>
+        /// <param name="myObject">Object to convert</param>
+        /// <returns>String of properties and values</returns>
+        public string ObjectToString<T>(T myObject)
+        {
+            var qsValues = string.Empty;
+
+            foreach (PropertyInfo p in myObject.GetType().GetProperties())
+            {
+                qsValues += qsValues != string.Empty ? "&" : "";
+                qsValues += $"{p.Name}={p.GetValue(myObject, null)}";
+            }
+
+            return qsValues;
         }
 
         /// <summary>

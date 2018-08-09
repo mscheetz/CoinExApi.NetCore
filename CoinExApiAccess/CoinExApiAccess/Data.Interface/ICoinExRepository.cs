@@ -29,7 +29,7 @@ namespace CoinExApiAccess.Data.Interface
         /// <param name="limit">Return amount</param>
         /// <returns>MarketDepth object</returns>
         Task<MarketDepth> GetMarketDepth(string pair, Merge merge = Merge.Zero, Limit limit = Limit.Twenty);
-        
+
         /// <summary>
         /// Get Transaction data
         /// </summary>
@@ -75,5 +75,34 @@ namespace CoinExApiAccess.Data.Interface
         /// <param name="limit">Number of records to return (default = 100)</param>
         /// <returns>Array of Withdrawal objects</returns>
         Task<Withdrawal[]> GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100);
+
+        /// <summary>
+        /// Post Limit Order
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="type">Trade type</param>
+        /// <param name="amount">Trade amount</param>
+        /// <param name="price">Trade price</param>
+        /// <returns>Order object</returns>
+        Task<Order> LimitOrder(string pair, OrderType type, decimal amount, decimal price);
+
+        /// <summary>
+        /// Post Market Order
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="type">Trade type</param>
+        /// <param name="amount">Trade amount</param>
+        /// <returns>Order object</returns>
+        Task<Order> MarketOrder(string pair, OrderType type, decimal amount);
+
+        /// <summary>
+        /// Post IOC (Immediate-or-Cancel) Order
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="type">Trade type</param>
+        /// <param name="amount">Trade amount</param>
+        /// <param name="price">Trade price</param>
+        /// <returns>Order object</returns>
+        Task<Order> IOCOrder(string pair, OrderType type, decimal amount, decimal price);
     }
 }
