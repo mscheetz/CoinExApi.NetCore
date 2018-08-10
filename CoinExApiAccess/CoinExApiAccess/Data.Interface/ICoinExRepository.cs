@@ -77,6 +77,22 @@ namespace CoinExApiAccess.Data.Interface
         Task<Withdrawal[]> GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100);
 
         /// <summary>
+        /// Submit a withdrawal
+        /// </summary>
+        /// <param name="coin">Coin to send</param>
+        /// <param name="address">Address to send to</param>
+        /// <param name="amount">Amount to send</param>
+        /// <returns>Withdrawal object</returns>
+        Task<Withdrawal> SubmitWithdrawal(string coin, string address, decimal amount);
+
+        /// <summary>
+        /// Cancel a withdrawal
+        /// </summary>
+        /// <param name="id">Withdrawal request Id</param>
+        /// <returns>Boolean when complete</returns>
+        Task<bool> CancelWithdrawal(long id);
+
+        /// <summary>
         /// Post Limit Order
         /// </summary>
         /// <param name="pair">Trading pair</param>
@@ -104,5 +120,54 @@ namespace CoinExApiAccess.Data.Interface
         /// <param name="price">Trade price</param>
         /// <returns>Order object</returns>
         Task<Order> IOCOrder(string pair, OrderType type, decimal amount, decimal price);
+
+        /// <summary>
+        /// Get Open Orders
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="page">Page number (default = 1)</param>
+        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <returns>PagedResponse with OpenOrder array</returns>
+        Task<PagedResponse<OpenOrder[]>> GetOpenOrders(string pair, int page = 1, int limit = 10);
+
+        /// <summary>
+        /// Get an order
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="id">Order Number</param>
+        /// <returns>Order object</returns>
+        Task<Order> GetOrder(string pair, int id);
+
+        /// <summary>
+        /// Get completed orders
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="page">Page number (default = 1)</param>
+        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <returns>PagedResponse with Order array</returns>
+        Task<PagedResponse<Order[]>> GetOrders(string pair, int page = 1, int limit = 10);
+
+        /// <summary>
+        /// Get user deals
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="page">Page number (default = 1)</param>
+        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <returns>PagedResponse with Deal array</returns>
+        Task<PagedResponse<Deal[]>> GetUserDeals(string pair, int page = 1, int limit = 10);
+
+        /// <summary>
+        /// Cancel an order
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="id">Order Number</param>
+        /// <returns>Order object</returns>
+        Task<Order> CancelOrder(string pair, int id);
+
+        /// <summary>
+        /// Get mining difficulty
+        /// </summary>
+        /// <returns>Current MiningDifficulty</returns>
+        Task<MiningDifficulty> GetMiningDifficulty();
     }
 }

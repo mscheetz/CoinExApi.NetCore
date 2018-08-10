@@ -101,5 +101,92 @@ namespace CoinExApiAccess.Tests
 
             Assert.NotNull(withdrawals);
         }
+
+        [Fact]
+        public void SubmitWithdrawalTest()
+        {
+            var coin = "BTC";
+            var address = "1MGLPvTzxK9argeNRTHJ9EZ3WtGZV6nxit";
+            var amount = 10M;
+            var withdrawals = _repo.SubmitWithdrawal(coin, address, amount).Result;
+
+            Assert.NotNull(withdrawals);
+        }
+
+        [Fact]
+        public void CancelWithdrawalTest()
+        {
+            var id = 1000;
+            var result = _repo.CancelWithdrawal(id).Result;
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void PostLimitOrderTest()
+        {
+            var pair = "CETBTC";
+            var type = OrderType.BUY;
+            var amount = 300M;
+            var price = 0.0000132M;
+            var order = _repo.LimitOrder(pair, type, amount, price).Result;
+
+            Assert.NotNull(order);
+        }
+
+        [Fact]
+        public void GetOpenOrdersTest()
+        {
+            var pair = "CETBTC";
+            var orders = _repo.GetOpenOrders(pair).Result;
+
+            Assert.NotNull(orders);
+        }
+
+        [Fact]
+        public void GetOrderTest()
+        {
+            var pair = "CETBTC";
+            var id = 100;
+            var orders = _repo.GetOrder(pair, id).Result;
+
+            Assert.NotNull(orders);
+        }
+
+        [Fact]
+        public void GetOrdersTest()
+        {
+            var pair = "CETBTC";
+            var orders = _repo.GetOrders(pair).Result;
+
+            Assert.NotNull(orders);
+        }
+
+        [Fact]
+        public void GetUserDealsTest()
+        {
+            var pair = "CETBTC";
+            var deals = _repo.GetUserDeals(pair).Result;
+
+            Assert.NotNull(deals);
+        }
+
+        [Fact]
+        public void CancelOrderTest()
+        {
+            var pair = "CETBTC";
+            var id = 100;
+            var order = _repo.CancelOrder(pair, id).Result;
+
+            Assert.NotNull(order);
+        }
+
+        [Fact]
+        public void GetMiningDifficultyTest()
+        {
+            var difficulty = _repo.GetMiningDifficulty().Result;
+
+            Assert.NotNull(difficulty);
+        }
     }
 }

@@ -21,6 +21,7 @@ namespace CoinExApiAccess.Data
         private ApiInformation _apiInfo = null;
         private Helper _helper;
         private string baseUrl;
+        private Dictionary<int, string> errorCodes;
 
         /// <summary>
         /// Constructor for non-signed endpoints
@@ -102,7 +103,7 @@ namespace CoinExApiAccess.Data
 
             var response = await _restRepo.GetApiStream<ResponseMessage<string[]>>(url);
 
-            return response.data;
+            return ResponseHandler(response);
         }
 
         /// <summary>
@@ -117,7 +118,7 @@ namespace CoinExApiAccess.Data
 
             var response = await _restRepo.GetApiStream<ResponseMessage<TickerData>>(url);
 
-            return response.data;
+            return ResponseHandler(response);
         }
 
         /// <summary>
@@ -138,7 +139,7 @@ namespace CoinExApiAccess.Data
 
             var response = await _restRepo.GetApiStream<ResponseMessage<MarketDepth>>(url);
 
-            return response.data;
+            return ResponseHandler(response);
         }
 
         /// <summary>
@@ -154,7 +155,7 @@ namespace CoinExApiAccess.Data
 
             var response = await _restRepo.GetApiStream<ResponseMessage<Transaction>>(url);
 
-            return response.data;
+            return ResponseHandler(response);
         }
 
         /// <summary>
@@ -173,7 +174,7 @@ namespace CoinExApiAccess.Data
 
             var response = await _restRepo.GetApiStream<ResponseMessage<KLine[]>>(url);
 
-            return response.data;
+            return ResponseHandler(response);
         }
 
         /// <summary>
@@ -193,7 +194,7 @@ namespace CoinExApiAccess.Data
 
             var response = await _restRepo.GetApiStream<ResponseMessage<Dictionary<string, Asset>>>(url, GetRequestHeaders(signature));
 
-            return response.data;
+            return ResponseHandler(response);
         }
 
         /// <summary>
@@ -265,7 +266,70 @@ namespace CoinExApiAccess.Data
 
             var response = await _restRepo.GetApiStream<ResponseMessage<Withdrawal[]>>(url, GetRequestHeaders(signature));
 
-            return response == null ? null : response.data;
+            return ResponseHandler(response);
+        }
+
+        /// <summary>
+        /// Submit a withdrawal
+        /// </summary>
+        /// <param name="coin">Coin to send</param>
+        /// <param name="address">Address to send to</param>
+        /// <param name="amount">Amount to send</param>
+        /// <returns>Withdrawal object</returns>
+        public async Task<Withdrawal> SubmitWithdrawal(string coin, string address, decimal amount)
+        {
+            var parameters = new SortedDictionary<string, string>();
+            parameters.Add("access_id", _apiInfo.apiKey);
+            parameters.Add("actual_amount", amount.ToString());
+            parameters.Add("coin_address", address);
+            parameters.Add("coin_type", coin);
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds().ToString());
+            var queryString = new List<string>
+            {
+                $"access_id={_apiInfo.apiKey}",
+                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
+            };
+            //{
+            //    $"access_id={_apiInfo.apiKey}",
+            //    $"amount={amount}",
+            //    $"coin_address={address}",
+            //    $"coin_type={coin}",
+            //    $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
+            //};
+
+            var endpoint = $"/balance/coin/withdraw";
+            var url = CreateUrl(endpoint);
+            //var queryString = _helper.DictionaryToString(parameters);
+            var signature = GetSignature(queryString);
+
+            var response = await _restRepo.PostApi<ResponseMessage<Withdrawal>, SortedDictionary<string, string>>(url, parameters, GetRequestHeaders(signature));
+
+            return ResponseHandler(response);
+        }
+
+        /// <summary>
+        /// Cancel a withdrawal
+        /// </summary>
+        /// <param name="id">Withdrawal request Id</param>
+        /// <returns>Boolean when complete</returns>
+        public async Task<bool> CancelWithdrawal(long id)
+        {
+            var queryString = new List<string>
+            {
+                $"access_id={_apiInfo.apiKey}",
+                $"coin_withdraw_id={id}",
+                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
+            };
+
+            var endpoint = $"/balance/coin/withdraw";
+            var url = CreateUrl(endpoint, queryString);
+            var signature = GetSignature(queryString);
+
+            var response = await _restRepo.DeleteApi<ResponseMessage<object>>(url, GetRequestHeaders(signature));
+
+            ResponseHandler(response);
+
+            return true;
         }
 
         /// <summary>
@@ -291,12 +355,17 @@ namespace CoinExApiAccess.Data
             var endpoint = $"/order/limit";
             var url = CreateUrl(endpoint);
 
-            var queryString = _helper.ObjectToString(request);
+            //var queryString = _helper.ObjectToString(request);
+            var queryString = new List<string>
+            {
+                $"access_id={_apiInfo.apiKey}",
+                $"tonce={request.tonce}"
+            };
             var signature = GetSignature(queryString);
 
-            var response = await _restRepo.GetApiStream<ResponseMessage<Order>>(url, GetRequestHeaders(signature));
+            var response = await _restRepo.PostApi<ResponseMessage<Order>, OrderRequest>(url, request, GetRequestHeaders(signature));
 
-            return response == null ? null : response.data;
+            return ResponseHandler(response);
         }
 
         /// <summary>
@@ -323,9 +392,9 @@ namespace CoinExApiAccess.Data
             var queryString = _helper.ObjectToString(request);
             var signature = GetSignature(queryString);
 
-            var response = await _restRepo.GetApiStream<ResponseMessage<Order>>(url, GetRequestHeaders(signature));
+            var response = await _restRepo.PostApi<ResponseMessage<Order>, OrderRequest>(url, request, GetRequestHeaders(signature));
 
-            return response == null ? null : response.data;
+            return ResponseHandler(response);
         }
 
         /// <summary>
@@ -354,9 +423,192 @@ namespace CoinExApiAccess.Data
             var queryString = _helper.ObjectToString(request);
             var signature = GetSignature(queryString);
 
+            var response = await _restRepo.PostApi<ResponseMessage<Order>, OrderRequest>(url, request, GetRequestHeaders(signature));
+
+            return ResponseHandler(response);
+        }
+
+        /// <summary>
+        /// Get Open Orders
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="page">Page number (default = 1)</param>
+        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <returns>PagedResponse with OpenOrder array</returns>
+        public async Task<PagedResponse<OpenOrder[]>> GetOpenOrders(string pair, int page = 1, int limit = 10)
+        {
+            limit = limit > 100 ? 100 : limit;
+            var queryString = new List<string>
+            {
+                $"access_id={_apiInfo.apiKey}",
+                $"limit={limit}",
+                $"market={pair}",
+                $"page={page}",
+                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
+            };
+
+            var endpoint = $"/order/pending";
+            var url = CreateUrl(endpoint, queryString);
+
+            var signature = GetSignature(queryString);
+
+            var response = await _restRepo.GetApiStream<ResponseMessage<PagedResponse<OpenOrder[]>>>(url, GetRequestHeaders(signature));
+
+            return ResponseHandler(response);
+        }
+
+        /// <summary>
+        /// Get an order
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="id">Order Number</param>
+        /// <returns>Order object</returns>
+        public async Task<Order> GetOrder(string pair, int id)
+        {
+            var queryString = new List<string>
+            {
+                $"access_id={_apiInfo.apiKey}",
+                $"id={id}",
+                $"market={pair}",
+                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
+            };
+
+            var endpoint = $"/order/status";
+            var url = CreateUrl(endpoint, queryString);
+
+            var signature = GetSignature(queryString);
+
             var response = await _restRepo.GetApiStream<ResponseMessage<Order>>(url, GetRequestHeaders(signature));
 
-            return response == null ? null : response.data;
+            return ResponseHandler(response);
+        }
+
+        /// <summary>
+        /// Get completed orders
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="page">Page number (default = 1)</param>
+        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <returns>PagedResponse with Order array</returns>
+        public async Task<PagedResponse<Order[]>> GetOrders(string pair, int page = 1, int limit = 10)
+        {
+            limit = limit > 100 ? 100 : limit;
+            var queryString = new List<string>
+            {
+                $"access_id={_apiInfo.apiKey}",
+                $"limit={limit}",
+                $"market={pair}",
+                $"page={page}",
+                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
+            };
+
+            var endpoint = $"/order/finished";
+            var url = CreateUrl(endpoint, queryString);
+
+            var signature = GetSignature(queryString);
+
+            var response = await _restRepo.GetApiStream<ResponseMessage<PagedResponse<Order[]>>>(url, GetRequestHeaders(signature));
+
+            return ResponseHandler(response);
+        }
+
+        /// <summary>
+        /// Get user deals
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="page">Page number (default = 1)</param>
+        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <returns>PagedResponse with Deal array</returns>
+        public async Task<PagedResponse<Deal[]>> GetUserDeals(string pair, int page = 1, int limit = 10)
+        {
+            limit = limit > 100 ? 100 : limit;
+            var queryString = new List<string>
+            {
+                $"access_id={_apiInfo.apiKey}",
+                $"limit={limit}",
+                $"market={pair}",
+                $"page={page}",
+                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
+            };
+
+            var endpoint = $"/order/finished";
+            var url = CreateUrl(endpoint, queryString);
+
+            var signature = GetSignature(queryString);
+
+            var response = await _restRepo.GetApiStream<ResponseMessage<PagedResponse<Deal[]>>>(url, GetRequestHeaders(signature));
+
+            return ResponseHandler(response);
+        }
+
+        /// <summary>
+        /// Cancel an order
+        /// </summary>
+        /// <param name="pair">Trading pair</param>
+        /// <param name="id">Order Number</param>
+        /// <returns>Order object</returns>
+        public async Task<Order> CancelOrder(string pair, int id)
+        {
+            var queryString = new List<string>
+            {
+                $"access_id={_apiInfo.apiKey}",
+                $"id={id}",
+                $"market={pair}",
+                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
+            };
+
+            var endpoint = $"/order/status";
+            var url = CreateUrl(endpoint, queryString);
+
+            var signature = GetSignature(queryString);
+
+            var response = await _restRepo.GetApiStream<ResponseMessage<Order>>(url, GetRequestHeaders(signature));
+
+            return ResponseHandler(response);
+        }
+
+        /// <summary>
+        /// Get mining difficulty
+        /// </summary>
+        /// <returns>Current MiningDifficulty</returns>
+        public async Task<MiningDifficulty> GetMiningDifficulty()
+        {
+            var queryString = new List<string>
+            {
+                $"access_id={_apiInfo.apiKey}",
+                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
+            };
+
+            var endpoint = $"/order/mining/difficulty";
+            var url = CreateUrl(endpoint);
+
+            var signature = GetSignature(queryString);
+
+            var response = await _restRepo.GetApiStream<ResponseMessage<MiningDifficulty>>(url, GetRequestHeaders(signature));
+
+            return ResponseHandler(response);
+        }
+
+        /// <summary>
+        /// Handle null responses or error codes from responses
+        /// </summary>
+        /// <typeparam name="T">Object type to return</typeparam>
+        /// <param name="response">ResponseMessage to process</param>
+        /// <returns>data from response or exception thrown</returns>
+        private T ResponseHandler<T>(ResponseMessage<T> response)
+        {
+            if (response == null)
+            {
+                throw new Exception("Something went wrong...");
+            }
+            else if (response.code != 0)
+            {
+                throw new Exception(response.message);
+            }
+            else
+            {
+                return response.data;
+            }
         }
 
         /// <summary>
