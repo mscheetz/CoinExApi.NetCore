@@ -1,6 +1,7 @@
 ﻿using CoinExApiAccess.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -36,6 +37,24 @@ namespace CoinExApiAccess.Core
             {
                 qsValues += qsValues != string.Empty ? "&" : "";
                 qsValues += $"{p.Name}={p.GetValue(myObject, null)}";
+            }
+
+            return qsValues;
+        }
+
+        /// <summary>
+        /// Convert a Dictionary to a string of property names and values
+        /// </summary>
+        /// <param name="myDictionary">Object to convert</param>
+        /// <returns>String of properties and values</returns>
+        public string DictionaryToString(SortedDictionary<string, string> myDictionary)
+        {
+            var qsValues = string.Empty;
+
+            foreach(var item in myDictionary)
+            {
+                qsValues += qsValues != string.Empty ? "&" : "";
+                qsValues += $"{item.Key}={item.Value}";
             }
 
             return qsValues;
