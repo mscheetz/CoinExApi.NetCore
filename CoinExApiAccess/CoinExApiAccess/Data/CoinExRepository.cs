@@ -163,9 +163,9 @@ namespace CoinExApiAccess.Data
         /// </summary>
         /// <param name="pair">String of trading pair</param>
         /// <param name="interval">Time interval for KLines</param>
-        /// <param name="limit">Number of KLines to return, max 1000</param>
+        /// <param name="limit">Number of KLines to return, (default = 10, max = 1000)</param>
         /// <returns>Array of KLine objects</returns>
-        public async Task<KLine[]> GetKLine(string pair, Interval interval, int limit = 1000)
+        public async Task<KLine[]> GetKLine(string pair, Interval interval, int limit = 10)
         {
             limit = limit > 1000 ? 1000 : limit;
             var intervalString = _helper.IntervalToString(interval);
@@ -222,9 +222,9 @@ namespace CoinExApiAccess.Data
         /// <param name="coin">Coin to return (default = "")</param>
         /// <param name="withdrawlId">Id of withdrawal to start listing (optional)</param>
         /// <param name="page">Page number to return (default = 1)</param>
-        /// <param name="limit">Number of records to return (default = 100)</param>
+        /// <param name="limit">Number of records to return (default = 10)</param>
         /// <returns>Array of Withdrawal objects</returns>
-        public async Task<Withdrawal[]> GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100)
+        public async Task<Withdrawal[]> GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 10)
         {
             return await OnGetWithdrawals(coin, withdrawlId, page, limit);
         }
@@ -236,7 +236,7 @@ namespace CoinExApiAccess.Data
         /// <param name="withdrawlId">Id of withdrawal to start listing (optional)</param>
         /// <param name="limit"
         /// <returns>Array of Withdrawal objects</returns>
-        private async Task<Withdrawal[]> OnGetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100)
+        private async Task<Withdrawal[]> OnGetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 10)
         {
             limit = limit > 100 ? 100 : limit;
             var queryString = new List<string>

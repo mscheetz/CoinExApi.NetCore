@@ -43,9 +43,9 @@ namespace CoinExApiAccess.Data.Interface
         /// </summary>
         /// <param name="pair">String of trading pair</param>
         /// <param name="interval">Time interval for KLines</param>
-        /// <param name="limit">Number of KLines to return, max 1000</param>
+        /// <param name="limit">Number of KLines to return, (default = 10, max = 1000)</param>
         /// <returns>Array of KLine objects</returns>
-        Task<KLine[]> GetKLine(string pair, Interval interval, int limit = 1000);
+        Task<KLine[]> GetKLine(string pair, Interval interval, int limit = 10);
 
         /// <summary>
         /// Get account balance
@@ -72,9 +72,9 @@ namespace CoinExApiAccess.Data.Interface
         /// <param name="coin">Coin to return (default = "")</param>
         /// <param name="withdrawlId">Id of withdrawal to start listing (optional)</param>
         /// <param name="page">Page number to return (default = 1)</param>
-        /// <param name="limit">Number of records to return (default = 100)</param>
+        /// <param name="limit">Number of records to return (default = 10)</param>
         /// <returns>Array of Withdrawal objects</returns>
-        Task<Withdrawal[]> GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100);
+        Task<Withdrawal[]> GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 10);
 
         /// <summary>
         /// Submit a withdrawal
