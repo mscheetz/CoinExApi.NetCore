@@ -135,6 +135,17 @@ namespace CoinExApiAccess.Tests
         }
 
         [Fact]
+        public void MarketLimitOrderTest()
+        {
+            var pair = "CETBTC";
+            var type = OrderType.BUY;
+            var amount = 300M;
+            var order = _repo.MarketOrder(pair, type, amount).Result;
+
+            Assert.NotNull(order);
+        }
+
+        [Fact]
         public void GetOpenOrdersTest()
         {
             var pair = "CETBTC";

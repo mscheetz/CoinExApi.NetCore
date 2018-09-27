@@ -342,28 +342,20 @@ namespace CoinExApiAccess.Data
         /// <returns>Order object</returns>
         public async Task<Order> LimitOrder(string pair, OrderType type, decimal amount, decimal price)
         {
-            var request = new OrderRequest
-            {
-                access_id = _apiInfo.apiKey,
-                amount = amount,
-                market = pair,
-                price = price,
-                tonce = _dtHelper.UTCtoUnixTimeMilliseconds(),
-                type = type.ToString().ToLower()
-            };
-
             var endpoint = $"/order/limit";
+
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", $"{_apiInfo.apiKey}");
+            parameters.Add("amount", $"{amount}");
+            parameters.Add("market", $"{pair}");
+            parameters.Add("price", $"{price}");
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds());
+            parameters.Add("type", $"{type.ToString().ToLower()}");
+
             var url = CreateUrl(endpoint);
+            var signature = GetSignature(parameters);
 
-            //var queryString = _helper.ObjectToString(request);
-            var queryString = new List<string>
-            {
-                $"access_id={_apiInfo.apiKey}",
-                $"tonce={request.tonce}"
-            };
-            var signature = GetSignature(queryString);
-
-            var response = await _restRepo.PostApi<ResponseMessage<Order>, OrderRequest>(url, request, GetRequestHeaders(signature));
+            var response = await _restRepo.PostApi<ResponseMessage<Order>, Dictionary<string, object>>(url, parameters, GetRequestHeaders(signature));
 
             return ResponseHandler(response);
         }
@@ -377,22 +369,19 @@ namespace CoinExApiAccess.Data
         /// <returns>Order object</returns>
         public async Task<Order> MarketOrder(string pair, OrderType type, decimal amount)
         {
-            var request = new OrderRequest
-            {
-                access_id = _apiInfo.apiKey,
-                amount = amount,
-                market = pair,
-                tonce = _dtHelper.UTCtoUnixTimeMilliseconds(),
-                type = type.ToString().ToLower()
-            };
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", $"{_apiInfo.apiKey}");
+            parameters.Add("amount", $"{amount}");
+            parameters.Add("market", $"{pair}");
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds());
+            parameters.Add("type", $"{type.ToString().ToLower()}");
 
             var endpoint = $"/order/market";
             var url = CreateUrl(endpoint);
 
-            var queryString = _helper.ObjectToString(request);
-            var signature = GetSignature(queryString);
+            var signature = GetSignature(parameters);
 
-            var response = await _restRepo.PostApi<ResponseMessage<Order>, OrderRequest>(url, request, GetRequestHeaders(signature));
+            var response = await _restRepo.PostApi<ResponseMessage<Order>, Dictionary<string, object>>(url, parameters, GetRequestHeaders(signature));
 
             return ResponseHandler(response);
         }
@@ -407,23 +396,20 @@ namespace CoinExApiAccess.Data
         /// <returns>Order object</returns>
         public async Task<Order> IOCOrder(string pair, OrderType type, decimal amount, decimal price)
         {
-            var request = new OrderRequest
-            {
-                access_id = _apiInfo.apiKey,
-                amount = amount,
-                market = pair,
-                price = price,
-                tonce = _dtHelper.UTCtoUnixTimeMilliseconds(),
-                type = type.ToString().ToLower()
-            };
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", $"{_apiInfo.apiKey}");
+            parameters.Add("amount", $"{amount}");
+            parameters.Add("market", $"{pair}");
+            parameters.Add("price", $"{price}");
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds());
+            parameters.Add("type", $"{type.ToString().ToLower()}");
 
             var endpoint = $"/order/ioc";
             var url = CreateUrl(endpoint);
 
-            var queryString = _helper.ObjectToString(request);
-            var signature = GetSignature(queryString);
+            var signature = GetSignature(parameters);
 
-            var response = await _restRepo.PostApi<ResponseMessage<Order>, OrderRequest>(url, request, GetRequestHeaders(signature));
+            var response = await _restRepo.PostApi<ResponseMessage<Order>, Dictionary<string, object>>(url, parameters, GetRequestHeaders(signature));
 
             return ResponseHandler(response);
         }
@@ -438,19 +424,17 @@ namespace CoinExApiAccess.Data
         public async Task<PagedResponse<OpenOrder[]>> GetOpenOrders(string pair, int page = 1, int limit = 10)
         {
             limit = limit > 100 ? 100 : limit;
-            var queryString = new List<string>
-            {
-                $"access_id={_apiInfo.apiKey}",
-                $"limit={limit}",
-                $"market={pair}",
-                $"page={page}",
-                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
-            };
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", $"{_apiInfo.apiKey}");
+            parameters.Add("limit", $"{limit}");
+            parameters.Add("market", $"{pair}");
+            parameters.Add("page", $"{page}");
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds());
 
             var endpoint = $"/order/pending";
-            var url = CreateUrl(endpoint, queryString);
+            var url = CreateUrl(endpoint, parameters);
 
-            var signature = GetSignature(queryString);
+            var signature = GetSignature(parameters);
 
             var response = await _restRepo.GetApiStream<ResponseMessage<PagedResponse<OpenOrder[]>>>(url, GetRequestHeaders(signature));
 
@@ -465,18 +449,16 @@ namespace CoinExApiAccess.Data
         /// <returns>Order object</returns>
         public async Task<Order> GetOrder(string pair, int id)
         {
-            var queryString = new List<string>
-            {
-                $"access_id={_apiInfo.apiKey}",
-                $"id={id}",
-                $"market={pair}",
-                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
-            };
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", $"{_apiInfo.apiKey}");
+            parameters.Add("id", $"{id}");
+            parameters.Add("market", $"{pair}");
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds());
 
             var endpoint = $"/order/status";
-            var url = CreateUrl(endpoint, queryString);
+            var url = CreateUrl(endpoint, parameters);
 
-            var signature = GetSignature(queryString);
+            var signature = GetSignature(parameters);
 
             var response = await _restRepo.GetApiStream<ResponseMessage<Order>>(url, GetRequestHeaders(signature));
 
@@ -493,19 +475,17 @@ namespace CoinExApiAccess.Data
         public async Task<PagedResponse<Order[]>> GetOrders(string pair, int page = 1, int limit = 10)
         {
             limit = limit > 100 ? 100 : limit;
-            var queryString = new List<string>
-            {
-                $"access_id={_apiInfo.apiKey}",
-                $"limit={limit}",
-                $"market={pair}",
-                $"page={page}",
-                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
-            };
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", $"{_apiInfo.apiKey}");
+            parameters.Add("limit", $"{limit}");
+            parameters.Add("market", $"{pair}");
+            parameters.Add("page", $"{page}");
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds());
 
             var endpoint = $"/order/finished";
-            var url = CreateUrl(endpoint, queryString);
+            var url = CreateUrl(endpoint, parameters);
 
-            var signature = GetSignature(queryString);
+            var signature = GetSignature(parameters);
 
             var response = await _restRepo.GetApiStream<ResponseMessage<PagedResponse<Order[]>>>(url, GetRequestHeaders(signature));
 
@@ -522,19 +502,17 @@ namespace CoinExApiAccess.Data
         public async Task<PagedResponse<Deal[]>> GetUserDeals(string pair, int page = 1, int limit = 10)
         {
             limit = limit > 100 ? 100 : limit;
-            var queryString = new List<string>
-            {
-                $"access_id={_apiInfo.apiKey}",
-                $"limit={limit}",
-                $"market={pair}",
-                $"page={page}",
-                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
-            };
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", $"{_apiInfo.apiKey}");
+            parameters.Add("limit", $"{limit}");
+            parameters.Add("market", $"{pair}");
+            parameters.Add("page", $"{page}");
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds());
 
             var endpoint = $"/order/finished";
-            var url = CreateUrl(endpoint, queryString);
+            var url = CreateUrl(endpoint, parameters);
 
-            var signature = GetSignature(queryString);
+            var signature = GetSignature(parameters);
 
             var response = await _restRepo.GetApiStream<ResponseMessage<PagedResponse<Deal[]>>>(url, GetRequestHeaders(signature));
 
@@ -549,18 +527,16 @@ namespace CoinExApiAccess.Data
         /// <returns>Order object</returns>
         public async Task<Order> CancelOrder(string pair, int id)
         {
-            var queryString = new List<string>
-            {
-                $"access_id={_apiInfo.apiKey}",
-                $"id={id}",
-                $"market={pair}",
-                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
-            };
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", $"{_apiInfo.apiKey}");
+            parameters.Add("id", $"{id}");
+            parameters.Add("market", $"{pair}");
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds());
 
             var endpoint = $"/order/status";
-            var url = CreateUrl(endpoint, queryString);
+            var url = CreateUrl(endpoint, parameters);
 
-            var signature = GetSignature(queryString);
+            var signature = GetSignature(parameters);
 
             var response = await _restRepo.GetApiStream<ResponseMessage<Order>>(url, GetRequestHeaders(signature));
 
@@ -573,16 +549,14 @@ namespace CoinExApiAccess.Data
         /// <returns>Current MiningDifficulty</returns>
         public async Task<MiningDifficulty> GetMiningDifficulty()
         {
-            var queryString = new List<string>
-            {
-                $"access_id={_apiInfo.apiKey}",
-                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
-            };
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", $"{_apiInfo.apiKey}");
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds());
 
             var endpoint = $"/order/mining/difficulty";
             var url = CreateUrl(endpoint);
 
-            var signature = GetSignature(queryString);
+            var signature = GetSignature(parameters);
 
             var response = await _restRepo.GetApiStream<ResponseMessage<MiningDifficulty>>(url, GetRequestHeaders(signature));
 
@@ -631,7 +605,7 @@ namespace CoinExApiAccess.Data
         /// <returns>String of message signature</returns>
         private string GetSignature(string queryString)
         {
-            queryString += $"&secretKey={_apiInfo.apiSecret}";
+            queryString += $"&secret_key={_apiInfo.apiSecret}";
 
             var hmac = security.GetHMACSignature(queryString);
 
@@ -650,7 +624,6 @@ namespace CoinExApiAccess.Data
             if (queryString != null)
             {
                 queryString = queryString.OrderBy(q => q).ToList();
-                queryString.Add($"secret_key={_apiInfo.apiSecret}");
                 for (int i = 0; i < queryString.Count; i++)
                 {
                     qsValues += qsValues != string.Empty ? "&" : "";
@@ -658,37 +631,92 @@ namespace CoinExApiAccess.Data
                 }
             }
 
-            var hmac = security.GetHMACSignature(qsValues);
-
-            return hmac;
+            return GetSignature(qsValues);
         }
 
         /// <summary>
-        /// Create a Binance url
+        /// Get signature of message
+        /// </summary>
+        /// <param name="parameters">Dictionary of request parameters</param>
+        /// <returns>String of message signature</returns>
+        private string GetSignature(Dictionary<string, object> parameters)
+        {
+            var qsValues = StringifyDictionary(parameters);
+
+            return GetSignature(qsValues);
+        }
+
+        /// <summary>
+        /// Create a CoinEx url
         /// </summary>
         /// <param name="apiPath">String of path to endpoint</param>
-        /// <param name="queryString">String[] of querystring values</param>
         /// <returns>String of url</returns>
-        private string CreateUrl(string apiPath, List<string> queryString = null)
+        private string CreateUrl(string apiPath)
         {
-            var qsValues = string.Empty;
-            var url = string.Empty;
+            return baseUrl + $"{apiPath}";
+        }
 
-            if (queryString != null)
-            {
-                queryString = queryString.OrderBy(q => q).ToList();
-                for (int i = 0; i < queryString.Count; i++)
-                {
-                    qsValues += qsValues != string.Empty ? "&" : "";
-                    qsValues += queryString[i];
-                }
-            }
+        /// <summary>
+        /// Create a CoinEx url
+        /// </summary>
+        /// <param name="apiPath">String of path to endpoint</param>
+        /// <param name="parameters">String[] of querystring values</param>
+        /// <returns>String of url</returns>
+        private string CreateUrl(string apiPath, Dictionary<string, object> parameters = null)
+        {
+            var qsValues = StringifyDictionary(parameters);
+            var url = baseUrl + $"{apiPath}";
 
-            url = baseUrl + $"{apiPath}";
             if (qsValues != string.Empty)
                 url += "?" + qsValues;
 
             return url;
+        }
+
+        /// <summary>
+        /// Create a CoinEx url
+        /// </summary>
+        /// <param name="apiPath">String of path to endpoint</param>
+        /// <param name="parameters">String[] of querystring values</param>
+        /// <returns>String of url</returns>
+        private string CreateUrl(string apiPath, List<string> parameters = null)
+        {
+            var qsValues = StringifyList(parameters);
+            var url = baseUrl + $"{apiPath}";
+
+            if (qsValues != string.Empty)
+                url += "?" + qsValues;
+
+            return url;
+        }
+
+        private string StringifyDictionary(Dictionary<string, object> parameters)
+        {
+            var qsValues = string.Empty;
+
+            if (parameters != null)
+            {
+                qsValues = string.Join("&", parameters.Select(p => p.Key + "=" + p.Value));
+            }
+
+            return qsValues;
+        }
+
+        private string StringifyList(List<string> parameters)
+        {
+            var qsValues = string.Empty;
+
+            if (parameters != null)
+            {
+                parameters = parameters.OrderBy(q => q).ToList();
+                for (int i = 0; i < parameters.Count; i++)
+                {
+                    qsValues += qsValues != string.Empty ? "&" : "";
+                    qsValues += parameters[i];
+                }
+            }
+
+            return qsValues;
         }
     }
 }
