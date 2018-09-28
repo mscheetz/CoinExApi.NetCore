@@ -84,9 +84,9 @@ namespace CoinExApiAccess
         /// </summary>
         /// <param name="pair">String of trading pair</param>
         /// <param name="interval">Time interval for KLines</param>
-        /// <param name="limit">Number of KLines to return, (default = 10, max = 1000)</param>
+        /// <param name="limit">Number of KLines to return, (default = 100, max = 1000)</param>
         /// <returns>Array of KLine objects</returns>
-        public KLine[] GetKLine(string pair, Interval interval, int limit = 10)
+        public KLine[] GetKLine(string pair, Interval interval, int limit = 100)
         {
             return _repository.GetKLine(pair, interval, limit).Result;
         }
@@ -98,6 +98,18 @@ namespace CoinExApiAccess
         public Dictionary<string, Asset> GetBalance()
         {
             return _repository.GetBalance().Result;
+        }
+
+        /// <summary>
+        /// Get account balance
+        /// </summary>
+        /// <param name="coin">Coin to get balance of</param>
+        /// <returns>Asset values for specified coin</returns>
+        public Asset GetBalance(string coin)
+        {
+            var balances = _repository.GetBalance().Result;
+
+            return balances[coin];
         }
 
         /// <summary>
@@ -127,7 +139,7 @@ namespace CoinExApiAccess
         /// <param name="page">Page number to return (default = 1)</param>
         /// <param name="limit">Number of records to return (default = 10)</param>
         /// <returns>Array of Withdrawal objects</returns>
-        public Withdrawal[] GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 10)
+        public Withdrawal[] GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100)
         {
             return _repository.GetWithdrawals(coin, withdrawlId, page, limit).Result;
         }
@@ -197,9 +209,9 @@ namespace CoinExApiAccess
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with OpenOrder array</returns>
-        public PagedResponse<OpenOrder[]> GetOpenOrders(string pair, int page = 1, int limit = 10)
+        public PagedResponse<OpenOrder[]> GetOpenOrders(string pair, int page = 1, int limit = 100)
         {
             return _repository.GetOpenOrders(pair, page, limit).Result;
         }
@@ -220,9 +232,9 @@ namespace CoinExApiAccess
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with Order array</returns>
-        public PagedResponse<Order[]> GetOrders(string pair, int page = 1, int limit = 10)
+        public PagedResponse<Order[]> GetOrders(string pair, int page = 1, int limit = 100)
         {
             return _repository.GetOrders(pair, page, limit).Result;
         }
@@ -232,9 +244,9 @@ namespace CoinExApiAccess
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with Deal array</returns>
-        public PagedResponse<Deal[]> GetUserDeals(string pair, int page = 1, int limit = 10)
+        public PagedResponse<Deal[]> GetUserDeals(string pair, int page = 1, int limit = 100)
         {
             return _repository.GetUserDeals(pair, page, limit).Result;
         }
@@ -306,9 +318,9 @@ namespace CoinExApiAccess
         /// </summary>
         /// <param name="pair">String of trading pair</param>
         /// <param name="interval">Time interval for KLines</param>
-        /// <param name="limit">Number of KLines to return, (default = 10, max = 1000)</param>
+        /// <param name="limit">Number of KLines to return, (default = 100, max = 1000)</param>
         /// <returns>Array of KLine objects</returns>
-        public async Task<KLine[]> GetKLineAsync(string pair, Interval interval, int limit = 10)
+        public async Task<KLine[]> GetKLineAsync(string pair, Interval interval, int limit = 100)
         {
             return await _repository.GetKLine(pair, interval, limit);
         }
@@ -320,6 +332,18 @@ namespace CoinExApiAccess
         public async Task<Dictionary<string, Asset>> GetBalanceAsync()
         {
             return await _repository.GetBalance();
+        }
+
+        /// <summary>
+        /// Get account balance
+        /// </summary>
+        /// <param name="coin">Coin to get balance of</param>
+        /// <returns>Asset values for specified coin</returns>
+        public async Task<Asset> GetBalanceAsync(string coin)
+        {
+            var balances = await _repository.GetBalance();
+
+            return balances[coin];
         }
 
         /// <summary>
@@ -349,7 +373,7 @@ namespace CoinExApiAccess
         /// <param name="page">Page number to return (default = 1)</param>
         /// <param name="limit">Number of records to return (default = 10)</param>
         /// <returns>Array of Withdrawal objects</returns>
-        public async Task<Withdrawal[]> GetWithdrawalsAsync(string coin = "", int withdrawlId = 0, int page = 1, int limit = 10)
+        public async Task<Withdrawal[]> GetWithdrawalsAsync(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100)
         {
             return await _repository.GetWithdrawals(coin, withdrawlId, page, limit);
         }
@@ -419,9 +443,9 @@ namespace CoinExApiAccess
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with OpenOrder array</returns>
-        public async Task<PagedResponse<OpenOrder[]>> GetOpenOrdersAsync(string pair, int page = 1, int limit = 10)
+        public async Task<PagedResponse<OpenOrder[]>> GetOpenOrdersAsync(string pair, int page = 1, int limit = 100)
         {
             return await _repository.GetOpenOrders(pair, page, limit);
         }
@@ -442,9 +466,9 @@ namespace CoinExApiAccess
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with Order array</returns>
-        public async Task<PagedResponse<Order[]>> GetOrdersAsync(string pair, int page = 1, int limit = 10)
+        public async Task<PagedResponse<Order[]>> GetOrdersAsync(string pair, int page = 1, int limit = 100)
         {
             return await _repository.GetOrders(pair, page, limit);
         }
@@ -454,9 +478,9 @@ namespace CoinExApiAccess
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with Deal array</returns>
-        public async Task<PagedResponse<Deal[]>> GetUserDealsAsync(string pair, int page = 1, int limit = 10)
+        public async Task<PagedResponse<Deal[]>> GetUserDealsAsync(string pair, int page = 1, int limit = 100)
         {
             return await _repository.GetUserDeals(pair, page, limit);
         }

@@ -43,9 +43,9 @@ namespace CoinExApiAccess.Data.Interface
         /// </summary>
         /// <param name="pair">String of trading pair</param>
         /// <param name="interval">Time interval for KLines</param>
-        /// <param name="limit">Number of KLines to return, (default = 10, max = 1000)</param>
+        /// <param name="limit">Number of KLines to return, (default = 100, max = 1000)</param>
         /// <returns>Array of KLine objects</returns>
-        Task<KLine[]> GetKLine(string pair, Interval interval, int limit = 10);
+        Task<KLine[]> GetKLine(string pair, Interval interval, int limit = 100);
 
         /// <summary>
         /// Get account balance
@@ -72,9 +72,9 @@ namespace CoinExApiAccess.Data.Interface
         /// <param name="coin">Coin to return (default = "")</param>
         /// <param name="withdrawlId">Id of withdrawal to start listing (optional)</param>
         /// <param name="page">Page number to return (default = 1)</param>
-        /// <param name="limit">Number of records to return (default = 10)</param>
+        /// <param name="limit">Number of records to return (default = 100, max = 100)</param>
         /// <returns>Array of Withdrawal objects</returns>
-        Task<Withdrawal[]> GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 10);
+        Task<Withdrawal[]> GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100);
 
         /// <summary>
         /// Submit a withdrawal
@@ -126,9 +126,9 @@ namespace CoinExApiAccess.Data.Interface
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with OpenOrder array</returns>
-        Task<PagedResponse<OpenOrder[]>> GetOpenOrders(string pair, int page = 1, int limit = 10);
+        Task<PagedResponse<OpenOrder[]>> GetOpenOrders(string pair, int page = 1, int limit = 100);
 
         /// <summary>
         /// Get an order
@@ -143,18 +143,18 @@ namespace CoinExApiAccess.Data.Interface
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with Order array</returns>
-        Task<PagedResponse<Order[]>> GetOrders(string pair, int page = 1, int limit = 10);
+        Task<PagedResponse<Order[]>> GetOrders(string pair, int page = 1, int limit = 100);
 
         /// <summary>
         /// Get user deals
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with Deal array</returns>
-        Task<PagedResponse<Deal[]>> GetUserDeals(string pair, int page = 1, int limit = 10);
+        Task<PagedResponse<Deal[]>> GetUserDeals(string pair, int page = 1, int limit = 100);
 
         /// <summary>
         /// Cancel an order

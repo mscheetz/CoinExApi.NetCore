@@ -163,9 +163,9 @@ namespace CoinExApiAccess.Data
         /// </summary>
         /// <param name="pair">String of trading pair</param>
         /// <param name="interval">Time interval for KLines</param>
-        /// <param name="limit">Number of KLines to return, (default = 10, max = 1000)</param>
+        /// <param name="limit">Number of KLines to return, (default = 100, max = 1000)</param>
         /// <returns>Array of KLine objects</returns>
-        public async Task<KLine[]> GetKLine(string pair, Interval interval, int limit = 10)
+        public async Task<KLine[]> GetKLine(string pair, Interval interval, int limit = 100)
         {
             limit = limit > 1000 ? 1000 : limit;
             var intervalString = _helper.IntervalToString(interval);
@@ -183,14 +183,13 @@ namespace CoinExApiAccess.Data
         /// <returns>Dictionary of Coin / value pairs</returns>
         public async Task<Dictionary<string, Asset>> GetBalance()
         {
-            var queryString = new List<string>
-            {
-                $"access_id={_apiInfo.apiKey}",
-                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
-            };
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", _apiInfo.apiKey);
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds().ToString());
+
             var endpoint = $"/balance/info";
-            var url = CreateUrl(endpoint, queryString);
-            var signature = GetSignature(queryString);
+            var url = CreateUrl(endpoint, parameters);
+            var signature = GetSignature(parameters);
 
             var response = await _restRepo.GetApiStream<ResponseMessage<Dictionary<string, Asset>>>(url, GetRequestHeaders(signature));
 
@@ -222,9 +221,9 @@ namespace CoinExApiAccess.Data
         /// <param name="coin">Coin to return (default = "")</param>
         /// <param name="withdrawlId">Id of withdrawal to start listing (optional)</param>
         /// <param name="page">Page number to return (default = 1)</param>
-        /// <param name="limit">Number of records to return (default = 10)</param>
+        /// <param name="limit">Number of records to return (default = 100)</param>
         /// <returns>Array of Withdrawal objects</returns>
-        public async Task<Withdrawal[]> GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 10)
+        public async Task<Withdrawal[]> GetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100)
         {
             return await OnGetWithdrawals(coin, withdrawlId, page, limit);
         }
@@ -234,35 +233,34 @@ namespace CoinExApiAccess.Data
         /// </summary>
         /// <param name="coin">Coin to return (default = "")</param>
         /// <param name="withdrawlId">Id of withdrawal to start listing (optional)</param>
-        /// <param name="limit"
+        /// <param name="limit">Number of records to return (default = 100)</param>
         /// <returns>Array of Withdrawal objects</returns>
-        private async Task<Withdrawal[]> OnGetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 10)
+        private async Task<Withdrawal[]> OnGetWithdrawals(string coin = "", int withdrawlId = 0, int page = 1, int limit = 100)
         {
             limit = limit > 100 ? 100 : limit;
-            var queryString = new List<string>
-            {
-                $"access_id={_apiInfo.apiKey}",
-                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
-            };
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", _apiInfo.apiKey);
             if (!string.IsNullOrEmpty(coin))
             {
-                queryString.Add($"coin_type={coin}");
+                parameters.Add("coin_type", coin);
             }
             if (withdrawlId > 0)
             {
-                queryString.Add($"coin_withdraw_id={withdrawlId}");
-            }
-            if (page > 1)
-            {
-                queryString.Add($"page={page}");
+                parameters.Add("coin_withdraw_id", withdrawlId);
             }
             if (limit < 100)
             {
-                queryString.Add($"limit={limit}");
+                parameters.Add("limit", limit);
             }
+            if (page > 1)
+            {
+                parameters.Add("page", page);
+            }
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds().ToString());
+
             var endpoint = $"/balance/coin/withdraw";
-            var url = CreateUrl(endpoint, queryString);
-            var signature = GetSignature(queryString);
+            var url = CreateUrl(endpoint, parameters);
+            var signature = GetSignature(parameters);
 
             var response = await _restRepo.GetApiStream<ResponseMessage<Withdrawal[]>>(url, GetRequestHeaders(signature));
 
@@ -278,31 +276,18 @@ namespace CoinExApiAccess.Data
         /// <returns>Withdrawal object</returns>
         public async Task<Withdrawal> SubmitWithdrawal(string coin, string address, decimal amount)
         {
-            var parameters = new SortedDictionary<string, string>();
+            var parameters = new Dictionary<string, object>();
             parameters.Add("access_id", _apiInfo.apiKey);
             parameters.Add("actual_amount", amount.ToString());
             parameters.Add("coin_address", address);
             parameters.Add("coin_type", coin);
             parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds().ToString());
-            var queryString = new List<string>
-            {
-                $"access_id={_apiInfo.apiKey}",
-                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
-            };
-            //{
-            //    $"access_id={_apiInfo.apiKey}",
-            //    $"amount={amount}",
-            //    $"coin_address={address}",
-            //    $"coin_type={coin}",
-            //    $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
-            //};
 
             var endpoint = $"/balance/coin/withdraw";
             var url = CreateUrl(endpoint);
-            //var queryString = _helper.DictionaryToString(parameters);
-            var signature = GetSignature(queryString);
+            var signature = GetSignature(parameters);
 
-            var response = await _restRepo.PostApi<ResponseMessage<Withdrawal>, SortedDictionary<string, string>>(url, parameters, GetRequestHeaders(signature));
+            var response = await _restRepo.PostApi<ResponseMessage<Withdrawal>, Dictionary<string, object>>(url, parameters, GetRequestHeaders(signature));
 
             return ResponseHandler(response);
         }
@@ -314,16 +299,14 @@ namespace CoinExApiAccess.Data
         /// <returns>Boolean when complete</returns>
         public async Task<bool> CancelWithdrawal(long id)
         {
-            var queryString = new List<string>
-            {
-                $"access_id={_apiInfo.apiKey}",
-                $"coin_withdraw_id={id}",
-                $"tonce={_dtHelper.UTCtoUnixTimeMilliseconds()}"
-            };
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("access_id", _apiInfo.apiKey);
+            parameters.Add("coin_withdraw_id", id);
+            parameters.Add("tonce", _dtHelper.UTCtoUnixTimeMilliseconds().ToString());
 
             var endpoint = $"/balance/coin/withdraw";
-            var url = CreateUrl(endpoint, queryString);
-            var signature = GetSignature(queryString);
+            var url = CreateUrl(endpoint, parameters);
+            var signature = GetSignature(parameters);
 
             var response = await _restRepo.DeleteApi<ResponseMessage<object>>(url, GetRequestHeaders(signature));
 
@@ -419,9 +402,9 @@ namespace CoinExApiAccess.Data
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with OpenOrder array</returns>
-        public async Task<PagedResponse<OpenOrder[]>> GetOpenOrders(string pair, int page = 1, int limit = 10)
+        public async Task<PagedResponse<OpenOrder[]>> GetOpenOrders(string pair, int page = 1, int limit = 100)
         {
             limit = limit > 100 ? 100 : limit;
             var parameters = new Dictionary<string, object>();
@@ -470,9 +453,9 @@ namespace CoinExApiAccess.Data
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with Order array</returns>
-        public async Task<PagedResponse<Order[]>> GetOrders(string pair, int page = 1, int limit = 10)
+        public async Task<PagedResponse<Order[]>> GetOrders(string pair, int page = 1, int limit = 100)
         {
             limit = limit > 100 ? 100 : limit;
             var parameters = new Dictionary<string, object>();
@@ -497,9 +480,9 @@ namespace CoinExApiAccess.Data
         /// </summary>
         /// <param name="pair">Trading pair</param>
         /// <param name="page">Page number (default = 1)</param>
-        /// <param name="limit">Number of order to return (default = 10, max = 100)</param>
+        /// <param name="limit">Number of order to return (default = 100, max = 100)</param>
         /// <returns>PagedResponse with Deal array</returns>
-        public async Task<PagedResponse<Deal[]>> GetUserDeals(string pair, int page = 1, int limit = 10)
+        public async Task<PagedResponse<Deal[]>> GetUserDeals(string pair, int page = 1, int limit = 100)
         {
             limit = limit > 100 ? 100 : limit;
             var parameters = new Dictionary<string, object>();

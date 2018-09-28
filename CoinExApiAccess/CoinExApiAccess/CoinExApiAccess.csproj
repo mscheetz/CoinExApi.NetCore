@@ -2,6 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PackageId>CoinExApi.NetCore</PackageId>
+    <Authors>Matt Scheetz</Authors>
+    <Product>CoinExApi.NetCore</Product>
+    <Description>CoinEx Exchange api access written in .Net Core</Description>
+    <Copyright>2018 Matt Scheetz</Copyright>
+    <PackageLicenseUrl>https://github.com/mscheetz/CoinExApi.NetCore/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/mscheetz/CoinExApi.NetCore</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mscheetz/CoinExApi.NetCore</RepositoryUrl>
+    <RepositoryType>GitHub</RepositoryType>
+    <PackageTags>coinex exchange cryptocurrency bitcoin blockchain</PackageTags>
+    <PackageReleaseNotes>CoinEx Exchange api access written in .Net Core</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

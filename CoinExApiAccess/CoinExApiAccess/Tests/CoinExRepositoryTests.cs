@@ -135,12 +135,25 @@ namespace CoinExApiAccess.Tests
         }
 
         [Fact]
-        public void MarketLimitOrderTest()
+        public void PostMarketOrderTest()
+        {
+            var pair = "ETHBTC";
+            var type = OrderType.BUY;
+            var amount = 1M;
+            var price = 0.02M;
+            var order = _repo.IOCOrder(pair, type, amount, price).Result;
+
+            Assert.NotNull(order);
+        }
+
+        [Fact]
+        public void PostIOCOrderTest()
         {
             var pair = "CETBTC";
             var type = OrderType.BUY;
             var amount = 300M;
-            var order = _repo.MarketOrder(pair, type, amount).Result;
+            var price = 0.0000132M;
+            var order = _repo.LimitOrder(pair, type, amount, price).Result;
 
             Assert.NotNull(order);
         }
