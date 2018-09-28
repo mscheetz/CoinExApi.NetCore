@@ -3,7 +3,7 @@
 
 This library is available on NuGet for download: https://www.nuget.org/packages/CoinExApi.NetCore  
 ```
-PM> Install-Package CoinExApi.NetCore -Version 1.0.1
+PM> Install-Package CoinExApi.NetCore
 ```
 
 CoinEx is a global and professional digital coin exchange service provider.  
