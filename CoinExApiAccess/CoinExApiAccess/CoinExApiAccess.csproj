@@ -13,6 +13,7 @@
     <RepositoryType>GitHub</RepositoryType>
     <PackageTags>coinex exchange cryptocurrency bitcoin blockchain</PackageTags>
     <PackageReleaseNotes>CoinEx Exchange api access written in .Net Core</PackageReleaseNotes>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
