@@ -1,5 +1,5 @@
 # CoinExApi.NetCore  
-.Net Core library for accessing the [CoinEx](https://www.coinex.com) Api  
+.Net Core library for accessing the [CoinEx](https://www.coinex.com/account/signup?refer_code=qyg7v) Api  
 
 This library is available on NuGet for download: https://www.nuget.org/packages/CoinExApi.NetCore  
 ```
@@ -7,7 +7,7 @@ PM> Install-Package CoinExApi.NetCore -Version 1.0.1
 ```
 
 CoinEx is a global and professional digital coin exchange service provider.  
-For more information: https://www.coinex.com/  
+For more information: [https://www.coinex.com/](https://www.coinex.com/account/signup?refer_code=qyg7v)
   
 ## Initialization:  
   
