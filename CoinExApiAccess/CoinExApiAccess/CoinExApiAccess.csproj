@@ -12,9 +12,14 @@
     <RepositoryUrl>https://github.com/mscheetz/CoinExApi.NetCore</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <PackageTags>coinex exchange cryptocurrency bitcoin blockchain</PackageTags>
-    <PackageReleaseNotes>Update to support .Net Standard</PackageReleaseNotes>
+    <PackageReleaseNotes>Include comments for nuget package</PackageReleaseNotes>
     <IsPackable>true</IsPackable>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>C:\Source\Git\CoinExApiAccess\CoinExApiAccess\CoinExApiAccess\CoinExApiAccess.xml</DocumentationFile>
+    <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
